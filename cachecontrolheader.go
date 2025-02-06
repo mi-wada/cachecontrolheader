@@ -10,6 +10,23 @@ import (
 	"time"
 )
 
+// directives
+const (
+	dMaxAge          = "max-age"
+	dMaxStale        = "max-stale"
+	dMinFresh        = "min-fresh"
+	dNoCache         = "no-cache"
+	dNoStore         = "no-store"
+	dNoTransform     = "no-transform"
+	dOnlyIfCached    = "only-if-cached"
+	dMustRevalidate  = "must-revalidate"
+	dMustUnderstand  = "must-understand"
+	dPrivate         = "private"
+	dProxyRevalidate = "proxy-revalidate"
+	dPublic          = "public"
+	dSMaxAge         = "s-maxage"
+)
+
 // Header represents a Cache-Control header.
 type Header struct {
 	MaxAge          time.Duration // max-age directive
@@ -30,43 +47,43 @@ type Header struct {
 func (h *Header) String() string {
 	var ds []string
 	if h.MaxAge > 0 {
-		ds = append(ds, fmt.Sprintf("max-age=%d", int(h.MaxAge.Seconds())))
+		ds = append(ds, fmt.Sprintf("%s=%d", dMaxAge, int(h.MaxAge.Seconds())))
 	}
 	if h.MaxStale > 0 {
-		ds = append(ds, fmt.Sprintf("max-stale=%d", int(h.MaxStale.Seconds())))
+		ds = append(ds, fmt.Sprintf("%s=%d", dMaxStale, int(h.MaxStale.Seconds())))
 	}
 	if h.MinFresh > 0 {
-		ds = append(ds, fmt.Sprintf("min-fresh=%d", int(h.MinFresh.Seconds())))
+		ds = append(ds, fmt.Sprintf("%s=%d", dMinFresh, int(h.MinFresh.Seconds())))
 	}
 	if h.NoCache {
-		ds = append(ds, "no-cache")
+		ds = append(ds, dNoCache)
 	}
 	if h.NoStore {
-		ds = append(ds, "no-store")
+		ds = append(ds, dNoStore)
 	}
 	if h.NoTransform {
-		ds = append(ds, "no-transform")
+		ds = append(ds, dNoTransform)
 	}
 	if h.OnlyIfCached {
-		ds = append(ds, "only-if-cached")
+		ds = append(ds, dOnlyIfCached)
 	}
 	if h.MustRevalidate {
-		ds = append(ds, "must-revalidate")
+		ds = append(ds, dMustRevalidate)
 	}
 	if h.MustUnderstand {
-		ds = append(ds, "must-understand")
+		ds = append(ds, dMustUnderstand)
 	}
 	if h.Private {
-		ds = append(ds, "private")
+		ds = append(ds, dPrivate)
 	}
 	if h.ProxyRevalidate {
-		ds = append(ds, "proxy-revalidate")
+		ds = append(ds, dProxyRevalidate)
 	}
 	if h.Public {
-		ds = append(ds, "public")
+		ds = append(ds, dPublic)
 	}
 	if h.SMaxAge > 0 {
-		ds = append(ds, fmt.Sprintf("s-maxage=%d", int(h.SMaxAge.Seconds())))
+		ds = append(ds, fmt.Sprintf("%s=%d", dSMaxAge, int(h.SMaxAge.Seconds())))
 	}
 	return strings.Join(ds, ", ")
 }
@@ -85,21 +102,21 @@ func Parse(header string) (*Header, error) {
 		switch len(splited) {
 		case 1:
 			switch splited[0] {
-			case "no-cache":
+			case dNoCache:
 				h.NoCache = true
-			case "no-store":
+			case dNoStore:
 				h.NoStore = true
-			case "only-if-cached":
+			case dOnlyIfCached:
 				h.OnlyIfCached = true
-			case "must-revalidate":
+			case dMustRevalidate:
 				h.MustRevalidate = true
-			case "must-understand":
+			case dMustUnderstand:
 				h.MustUnderstand = true
-			case "private":
+			case dPrivate:
 				h.Private = true
-			case "proxy-revalidate":
+			case dProxyRevalidate:
 				h.ProxyRevalidate = true
-			case "public":
+			case dPublic:
 				h.Public = true
 			default:
 				return nil, fmt.Errorf("unknown directive: %s", splited[0])
@@ -111,13 +128,13 @@ func Parse(header string) (*Header, error) {
 				return nil, fmt.Errorf("failed to parse duration for directive %s=%s: %w", splited[0], splited[1], err)
 			}
 			switch k {
-			case "max-age":
+			case dMaxAge:
 				h.MaxAge = v
-			case "max-stale":
+			case dMaxStale:
 				h.MaxStale = v
-			case "min-fresh":
+			case dMinFresh:
 				h.MinFresh = v
-			case "s-maxage":
+			case dSMaxAge:
 				h.SMaxAge = v
 			default:
 				return nil, fmt.Errorf("unknown directive: %s", k)
