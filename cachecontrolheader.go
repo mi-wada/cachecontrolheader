@@ -1,3 +1,5 @@
+// Package cachecontrolheader provides functionality to parse and handle
+// Cache-Control headers based on [RFC9111](https://datatracker.ietf.org/doc/html/rfc9111.html#name-cache-control).
 package cachecontrolheader
 
 import (
@@ -9,39 +11,22 @@ import (
 
 // Header represents a Cache-Control header.
 type Header struct {
-	// In request header: https://datatracker.ietf.org/doc/html/rfc9111.html#section-5.2.1.4
-	// In response header: https://datatracker.ietf.org/doc/html/rfc9111.html#section-5.2.2.4
-	NoCache bool
-	// In request header: https://datatracker.ietf.org/doc/html/rfc9111.html#section-5.2.1.5
-	// In response header: https://datatracker.ietf.org/doc/html/rfc9111.html#section-5.2.2.5
-	NoStore bool
-	// In request header: https://datatracker.ietf.org/doc/html/rfc9111.html#section-5.2.1.6
-	// In response header: https://datatracker.ietf.org/doc/html/rfc9111.html#section-5.2.2.6
-	NoTransform bool
-	// In request header: https://datatracker.ietf.org/doc/html/rfc9111.html#section-5.2.1.7
-	OnlyIfCached bool
-	// https://datatracker.ietf.org/doc/html/rfc9111.html#section-5.2.2.2
-	MustRevalidate bool
-	// https://datatracker.ietf.org/doc/html/rfc9111.html#section-5.2.2.3
-	MustUnderstand bool
-	// https://datatracker.ietf.org/doc/html/rfc9111.html#section-5.2.2.7
-	Private bool
-	// https://datatracker.ietf.org/doc/html/rfc9111.html#section-5.2.2.8
-	ProxyRevalidate bool
-	// https://datatracker.ietf.org/doc/html/rfc9111.html#section-5.2.2.9
-	Public bool
-	// In request header: https://datatracker.ietf.org/doc/html/rfc9111.html#section-5.2.1.1
-	// In response header: https://datatracker.ietf.org/doc/html/rfc9111.html#section-5.2.2.1
-	MaxAge time.Duration
-	// https://datatracker.ietf.org/doc/html/rfc9111.html#section-5.2.1.2
-	MaxStale time.Duration
-	// https://datatracker.ietf.org/doc/html/rfc9111.html#section-5.2.1.3
-	MinFresh time.Duration
-	// https://datatracker.ietf.org/doc/html/rfc9111.html#section-5.2.2.10
-	SMaxAge time.Duration
+	NoCache         bool          // no-cache directive
+	NoStore         bool          // no-store directive
+	NoTransform     bool          // no-transform directive
+	OnlyIfCached    bool          // only-if-cached directive
+	MustRevalidate  bool          // must-revalidate directive
+	MustUnderstand  bool          // must-understand directive
+	Private         bool          // private directive
+	ProxyRevalidate bool          // proxy-revalidate directive
+	Public          bool          // public directive
+	MaxAge          time.Duration // max-age directive
+	MaxStale        time.Duration // max-stale directive
+	MinFresh        time.Duration // min-fresh directive
+	SMaxAge         time.Duration // s-maxage directive
 }
 
-// Parse parses a Cache-Control header based on [RFC9111](https://datatracker.ietf.org/doc/html/rfc9111.html).
+// Parse parses a Cache-Control header based on RFC9111.
 func Parse(header string) (*Header, error) {
 	header = strings.ToLower(strings.ReplaceAll(header, " ", ""))
 
@@ -97,7 +82,7 @@ func Parse(header string) (*Header, error) {
 	return &h, nil
 }
 
-// ParseReader parses a Cache-Control header based on [RFC9111](https://datatracker.ietf.org/doc/html/rfc9111.html) from an [io.Reader].
+// ParseReader parses a Cache-Control header from an io.Reader based on RFC9111.
 func ParseReader(r io.Reader) (*Header, error) {
 	header, err := io.ReadAll(r)
 	if err != nil {
