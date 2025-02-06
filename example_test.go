@@ -7,11 +7,11 @@ import (
 )
 
 func Example() {
-	s := "max-age=3600, private, must-revalidate"
+	s := "max-age=3600, must-revalidate, private"
 	h, err := cachecontrolheader.Parse(s)
 	if err != nil {
 		panic(err)
 	}
-	fmt.Println(h.MaxAge, h.Private, h.MustRevalidate)
+	fmt.Println(h.MaxAge, h.MustRevalidate, h.Private)
 	// Output: 1h0m0s true true
 }

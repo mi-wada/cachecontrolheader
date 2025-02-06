@@ -12,6 +12,9 @@ import (
 
 // Header represents a Cache-Control header.
 type Header struct {
+	MaxAge          time.Duration // max-age directive
+	MaxStale        time.Duration // max-stale directive
+	MinFresh        time.Duration // min-fresh directive
 	NoCache         bool          // no-cache directive
 	NoStore         bool          // no-store directive
 	NoTransform     bool          // no-transform directive
@@ -21,10 +24,51 @@ type Header struct {
 	Private         bool          // private directive
 	ProxyRevalidate bool          // proxy-revalidate directive
 	Public          bool          // public directive
-	MaxAge          time.Duration // max-age directive
-	MaxStale        time.Duration // max-stale directive
-	MinFresh        time.Duration // min-fresh directive
 	SMaxAge         time.Duration // s-maxage directive
+}
+
+func (h *Header) String() string {
+	var ds []string
+	if h.MaxAge > 0 {
+		ds = append(ds, fmt.Sprintf("max-age=%d", int(h.MaxAge.Seconds())))
+	}
+	if h.MaxStale > 0 {
+		ds = append(ds, fmt.Sprintf("max-stale=%d", int(h.MaxStale.Seconds())))
+	}
+	if h.MinFresh > 0 {
+		ds = append(ds, fmt.Sprintf("min-fresh=%d", int(h.MinFresh.Seconds())))
+	}
+	if h.NoCache {
+		ds = append(ds, "no-cache")
+	}
+	if h.NoStore {
+		ds = append(ds, "no-store")
+	}
+	if h.NoTransform {
+		ds = append(ds, "no-transform")
+	}
+	if h.OnlyIfCached {
+		ds = append(ds, "only-if-cached")
+	}
+	if h.MustRevalidate {
+		ds = append(ds, "must-revalidate")
+	}
+	if h.MustUnderstand {
+		ds = append(ds, "must-understand")
+	}
+	if h.Private {
+		ds = append(ds, "private")
+	}
+	if h.ProxyRevalidate {
+		ds = append(ds, "proxy-revalidate")
+	}
+	if h.Public {
+		ds = append(ds, "public")
+	}
+	if h.SMaxAge > 0 {
+		ds = append(ds, fmt.Sprintf("s-maxage=%d", int(h.SMaxAge.Seconds())))
+	}
+	return strings.Join(ds, ", ")
 }
 
 // Parse parses a Cache-Control header based on RFC9111.

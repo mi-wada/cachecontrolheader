@@ -14,11 +14,11 @@ func TestParse(t *testing.T) {
 		wantHeader *cachecontrolheader.Header
 	}{
 		{
-			header: "max-age=3600, private, must-revalidate",
+			header: "max-age=3600, must-revalidate, private",
 			wantHeader: &cachecontrolheader.Header{
 				MaxAge:         3600 * time.Second,
-				Private:        true,
 				MustRevalidate: true,
+				Private:        true,
 			},
 		},
 		{
@@ -33,6 +33,32 @@ func TestParse(t *testing.T) {
 			}
 			if diff := cmp.Diff(tt.wantHeader, h); diff != "" {
 				t.Errorf("Header mismatch (-want +got):\n%s", diff)
+			}
+		})
+	}
+}
+
+func TestHeader_String(t *testing.T) {
+	for _, tt := range []struct {
+		header *cachecontrolheader.Header
+		want   string
+	}{
+		{
+			header: &cachecontrolheader.Header{
+				MaxAge:         3600 * time.Second,
+				MustRevalidate: true,
+				Private:        true,
+			},
+			want: "max-age=3600, must-revalidate, private",
+		},
+		{
+			header: &cachecontrolheader.Header{},
+			want:   "",
+		},
+	} {
+		t.Run(tt.want, func(t *testing.T) {
+			if got := tt.header.String(); got != tt.want {
+				t.Errorf("Header.String() = %q, want %q", got, tt.want)
 			}
 		})
 	}

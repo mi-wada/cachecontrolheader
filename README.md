@@ -24,8 +24,8 @@ func main() {
 		panic(err)
 	}
 	fmt.Println(cacheControl.MaxAge)
-	fmt.Println(cacheControl.Private)
 	fmt.Println(cacheControl.MustRevalidate)
+	fmt.Println(cacheControl.Private)
 }
 ```
 
@@ -38,3 +38,4 @@ go get github.com/mi-wada/cachecontrolheader@latest
 ## ToDo
 
 - [ ] Add an option to ignore unknown directives
+- [ ] Add a function to convert Header struct to string
