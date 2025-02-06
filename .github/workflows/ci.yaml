@@ -1,0 +1,27 @@
+name: CI
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+defaults:
+  run:
+    shell: bash
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    strategy:
+      fail-fast: false
+      matrix:
+        # Run tests from Go 1.11 because versions below 1.11 do not support Go Modules, resulting in test failures.
+        go-version: ['oldstable', 'stable']
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: ${{ matrix.go-version }}
+      - run: go test -v ./...
