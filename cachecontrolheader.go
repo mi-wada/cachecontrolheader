@@ -9,21 +9,36 @@ import (
 
 // Header represents a Cache-Control header.
 type Header struct {
-	NoCache         bool
-	NoStore         bool
-	NoTransform     bool
-	OnlyIfCached    bool
-	MustRevalidate  bool
-	MustUnderstand  bool
-	Private         bool
+	// In request header: https://datatracker.ietf.org/doc/html/rfc9111.html#section-5.2.1.4
+	// In response header: https://datatracker.ietf.org/doc/html/rfc9111.html#section-5.2.2.4
+	NoCache bool
+	// In request header: https://datatracker.ietf.org/doc/html/rfc9111.html#section-5.2.1.5
+	// In response header: https://datatracker.ietf.org/doc/html/rfc9111.html#section-5.2.2.5
+	NoStore bool
+	// In request header: https://datatracker.ietf.org/doc/html/rfc9111.html#section-5.2.1.6
+	// In response header: https://datatracker.ietf.org/doc/html/rfc9111.html#section-5.2.2.6
+	NoTransform bool
+	// In request header: https://datatracker.ietf.org/doc/html/rfc9111.html#section-5.2.1.7
+	OnlyIfCached bool
+	// https://datatracker.ietf.org/doc/html/rfc9111.html#section-5.2.2.2
+	MustRevalidate bool
+	// https://datatracker.ietf.org/doc/html/rfc9111.html#section-5.2.2.3
+	MustUnderstand bool
+	// https://datatracker.ietf.org/doc/html/rfc9111.html#section-5.2.2.7
+	Private bool
+	// https://datatracker.ietf.org/doc/html/rfc9111.html#section-5.2.2.8
 	ProxyRevalidate bool
-	Public          bool
-	// In request header, it means <https://datatracker.ietf.org/doc/html/rfc9111.html#section-5.2.1.1>.
-	// In response header, it means <>
-	MaxAge   time.Duration
+	// https://datatracker.ietf.org/doc/html/rfc9111.html#section-5.2.2.9
+	Public bool
+	// In request header: <https://datatracker.ietf.org/doc/html/rfc9111.html#section-5.2.1.1
+	// In response header: https://datatracker.ietf.org/doc/html/rfc9111.html#section-5.2.2.1
+	MaxAge time.Duration
+	// https://datatracker.ietf.org/doc/html/rfc9111.html#section-5.2.1.2
 	MaxStale time.Duration
+	// https://datatracker.ietf.org/doc/html/rfc9111.html#section-5.2.1.3
 	MinFresh time.Duration
-	SMaxAge  time.Duration
+	// https://datatracker.ietf.org/doc/html/rfc9111.html#section-5.2.2.10
+	SMaxAge time.Duration
 }
 
 // Parse parses a Cache-Control header based on [RFC9111](https://datatracker.ietf.org/doc/html/rfc9111.html).
