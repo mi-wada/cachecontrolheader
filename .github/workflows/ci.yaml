@@ -22,9 +22,9 @@ jobs:
           - macos-latest
           - windows-latest
         go:
+          - '1.21'
           - '1.22'
           - '1.23'
-          - '1.24'
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-go@v5
