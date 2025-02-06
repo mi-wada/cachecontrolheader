@@ -10,20 +10,20 @@ import (
 
 func TestParse(t *testing.T) {
 	for _, tt := range []struct {
-		header     string
-		wantHeader *cachecontrolheader.Header
+		header string
+		want   *cachecontrolheader.Header
 	}{
 		{
 			header: "max-age=3600, must-revalidate, private",
-			wantHeader: &cachecontrolheader.Header{
+			want: &cachecontrolheader.Header{
 				MaxAge:         3600 * time.Second,
 				MustRevalidate: true,
 				Private:        true,
 			},
 		},
 		{
-			header:     "",
-			wantHeader: &cachecontrolheader.Header{},
+			header: "",
+			want:   &cachecontrolheader.Header{},
 		},
 	} {
 		t.Run(tt.header, func(t *testing.T) {
@@ -31,7 +31,7 @@ func TestParse(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			if diff := cmp.Diff(tt.wantHeader, h); diff != "" {
+			if diff := cmp.Diff(tt.want, h); diff != "" {
 				t.Errorf("Header mismatch (-want +got):\n%s", diff)
 			}
 		})
