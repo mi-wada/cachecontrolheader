@@ -25,7 +25,7 @@ func main() {
 	}
 	fmt.Println(cacheControl.MaxAge)
 	fmt.Println(cacheControl.Private)
-  fmt.Println(cacheControl.MustRevalidate)
+	fmt.Println(cacheControl.MustRevalidate)
 }
 ```
 
