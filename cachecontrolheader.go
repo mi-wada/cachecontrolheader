@@ -171,10 +171,10 @@ func Parse(header string, opts ...parseOption) (*Header, error) {
 // ParseReader parses a Cache-Control header from an io.Reader based on RFC9111.
 // By default, it returns an error for unknown directives.
 // Use the [IgnoreUnknown] option to ignore unknown directives.
-func ParseReader(r io.Reader) (*Header, error) {
+func ParseReader(r io.Reader, opts ...parseOption) (*Header, error) {
 	header, err := io.ReadAll(r)
 	if err != nil {
 		return nil, err
 	}
-	return Parse(string(header))
+	return Parse(string(header), opts...)
 }
