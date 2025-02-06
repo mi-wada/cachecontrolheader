@@ -34,3 +34,7 @@ func main() {
 ```shell
 go get github.com/mi-wada/cachecontrolheader@latest
 ```
+
+## ToDo
+
+- [ ] Add an option to ignore unknown directives
