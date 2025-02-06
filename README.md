@@ -29,7 +29,7 @@ func main() {
 }
 ```
 
-## Installation
+## Install
 
 ```shell
 go get github.com/mi-wada/cachecontrolheader@latest
