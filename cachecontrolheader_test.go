@@ -38,6 +38,64 @@ func TestParse(t *testing.T) {
 	}
 }
 
+func TestParseErr(t *testing.T) {
+	for _, tt := range []struct {
+		header string
+		want   *cachecontrolheader.Header
+	}{
+		{
+			header: "max-age=3600, must-revalidate, private, unknown",
+		},
+		{
+			header: "unknown",
+		},
+		{
+			header: "unknown=10",
+		},
+	} {
+		t.Run(tt.header, func(t *testing.T) {
+			h, err := cachecontrolheader.Parse(tt.header)
+			if err == nil {
+				t.Errorf("want error, but got nil. h: %v", h)
+			}
+		})
+	}
+}
+
+func TestParseIgnoreUnknown(t *testing.T) {
+	for _, tt := range []struct {
+		header string
+		want   *cachecontrolheader.Header
+	}{
+		{
+			header: "max-age=3600, must-revalidate, private, unknown",
+			want: &cachecontrolheader.Header{
+				MaxAge:         3600 * time.Second,
+				MustRevalidate: true,
+				Private:        true,
+			},
+		},
+		{
+			header: "unknown",
+			want:   &cachecontrolheader.Header{},
+		},
+		{
+			header: "unknown=10",
+			want:   &cachecontrolheader.Header{},
+		},
+	} {
+		t.Run(tt.header, func(t *testing.T) {
+			h, err := cachecontrolheader.Parse(tt.header, cachecontrolheader.IgnoreUnknown())
+			if err != nil {
+				t.Fatal(err)
+			}
+			if diff := cmp.Diff(tt.want, h); diff != "" {
+				t.Errorf("Header mismatch (-want +got):\n%s", diff)
+			}
+		})
+	}
+}
+
 func TestHeader_String(t *testing.T) {
 	for _, tt := range []struct {
 		header *cachecontrolheader.Header

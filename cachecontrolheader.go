@@ -88,8 +88,24 @@ func (h *Header) String() string {
 	return strings.Join(ds, ", ")
 }
 
+type option struct {
+	ignoreUnknownDirectives bool
+}
+type parseOption func(*option)
+
+// IgnoreUnknown allows to ignore unknown directives.
+func IgnoreUnknown() parseOption {
+	return func(o *option) {
+		o.ignoreUnknownDirectives = true
+	}
+}
+
 // Parse parses a Cache-Control header based on RFC9111.
-func Parse(header string) (*Header, error) {
+func Parse(header string, opts ...parseOption) (*Header, error) {
+	option := option{}
+	for _, opt := range opts {
+		opt(&option)
+	}
 	header = strings.ToLower(strings.ReplaceAll(header, " ", ""))
 
 	h := Header{}
@@ -119,6 +135,9 @@ func Parse(header string) (*Header, error) {
 			case dPublic:
 				h.Public = true
 			default:
+				if option.ignoreUnknownDirectives {
+					continue
+				}
 				return nil, fmt.Errorf("unknown directive: %s", splited[0])
 			}
 		case 2:
@@ -137,6 +156,9 @@ func Parse(header string) (*Header, error) {
 			case dSMaxAge:
 				h.SMaxAge = v
 			default:
+				if option.ignoreUnknownDirectives {
+					continue
+				}
 				return nil, fmt.Errorf("unknown directive: %s", k)
 			}
 		}
