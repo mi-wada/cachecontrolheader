@@ -101,6 +101,8 @@ func IgnoreUnknown() parseOption {
 }
 
 // Parse parses a Cache-Control header based on RFC9111.
+// By default, it returns an error for unknown directives.
+// Use the [IgnoreUnknown] option to ignore unknown directives.
 func Parse(header string, opts ...parseOption) (*Header, error) {
 	option := option{}
 	for _, opt := range opts {
@@ -167,6 +169,8 @@ func Parse(header string, opts ...parseOption) (*Header, error) {
 }
 
 // ParseReader parses a Cache-Control header from an io.Reader based on RFC9111.
+// By default, it returns an error for unknown directives.
+// Use the [IgnoreUnknown] option to ignore unknown directives.
 func ParseReader(r io.Reader) (*Header, error) {
 	header, err := io.ReadAll(r)
 	if err != nil {
