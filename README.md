@@ -38,4 +38,3 @@ go get github.com/mi-wada/cachecontrolheader@latest
 ## ToDo
 
 - [ ] Add an option to ignore unknown directives
-- [ ] Add a function to convert Header struct to string
