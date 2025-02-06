@@ -44,6 +44,7 @@ type Header struct {
 	SMaxAge         time.Duration // s-maxage directive
 }
 
+// String returns a string representation of the Cache-Control header.
 func (h *Header) String() string {
 	var ds []string
 	if h.MaxAge > 0 {
@@ -89,20 +90,20 @@ func (h *Header) String() string {
 }
 
 type option struct {
-	ignoreUnknownDirectives bool
+	errorOnUnknownDirectives bool
 }
 type parseOption func(*option)
 
-// IgnoreUnknown allows to ignore unknown directives.
-func IgnoreUnknown() parseOption {
+// ErrorOnUnknown allows to return an error when unknown directives are found.
+func ErrorOnUnknown() parseOption {
 	return func(o *option) {
-		o.ignoreUnknownDirectives = true
+		o.errorOnUnknownDirectives = true
 	}
 }
 
 // Parse parses a Cache-Control header based on RFC9111.
-// By default, it returns an error for unknown directives.
-// Use the [IgnoreUnknown] option to ignore unknown directives.
+// By default, it ignores unknown directives.
+// To return an error when unknown directives are found, use [ErrorOnUnknown] option.
 func Parse(header string, opts ...parseOption) (*Header, error) {
 	option := option{}
 	for _, opt := range opts {
@@ -137,10 +138,9 @@ func Parse(header string, opts ...parseOption) (*Header, error) {
 			case dPublic:
 				h.Public = true
 			default:
-				if option.ignoreUnknownDirectives {
-					continue
+				if option.errorOnUnknownDirectives {
+					return nil, fmt.Errorf("unknown directive: %s", splited[0])
 				}
-				return nil, fmt.Errorf("unknown directive: %s", splited[0])
 			}
 		case 2:
 			k := splited[0]
@@ -158,10 +158,9 @@ func Parse(header string, opts ...parseOption) (*Header, error) {
 			case dSMaxAge:
 				h.SMaxAge = v
 			default:
-				if option.ignoreUnknownDirectives {
-					continue
+				if option.errorOnUnknownDirectives {
+					return nil, fmt.Errorf("unknown directive: %s", k)
 				}
-				return nil, fmt.Errorf("unknown directive: %s", k)
 			}
 		}
 	}
@@ -169,8 +168,8 @@ func Parse(header string, opts ...parseOption) (*Header, error) {
 }
 
 // ParseReader parses a Cache-Control header from an io.Reader based on RFC9111.
-// By default, it returns an error for unknown directives.
-// Use the [IgnoreUnknown] option to ignore unknown directives.
+// By default, it ignores unknown directives.
+// To return an error when unknown directives are found, use [ErrorOnUnknown] option.
 func ParseReader(r io.Reader, opts ...parseOption) (*Header, error) {
 	header, err := io.ReadAll(r)
 	if err != nil {
