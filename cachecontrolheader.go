@@ -30,7 +30,7 @@ type Header struct {
 	ProxyRevalidate bool
 	// https://datatracker.ietf.org/doc/html/rfc9111.html#section-5.2.2.9
 	Public bool
-	// In request header: <https://datatracker.ietf.org/doc/html/rfc9111.html#section-5.2.1.1
+	// In request header: https://datatracker.ietf.org/doc/html/rfc9111.html#section-5.2.1.1
 	// In response header: https://datatracker.ietf.org/doc/html/rfc9111.html#section-5.2.2.1
 	MaxAge time.Duration
 	// https://datatracker.ietf.org/doc/html/rfc9111.html#section-5.2.1.2
