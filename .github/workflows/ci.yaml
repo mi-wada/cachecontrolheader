@@ -17,7 +17,6 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        # Run tests from Go 1.11 because versions below 1.11 do not support Go Modules, resulting in test failures.
         go-version: ['oldstable', 'stable']
     steps:
       - uses: actions/checkout@v4
