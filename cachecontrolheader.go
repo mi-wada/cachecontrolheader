@@ -157,7 +157,7 @@ func Parse(header string, opts ...parseOption) (*Header, error) {
 			k := splited[0]
 			v, err := time.ParseDuration(strings.TrimSpace(splited[1]) + "s")
 			if err != nil && option.errorOnInvalidValues {
-				return nil, fmt.Errorf("failed to parse duration for directive %s=%s: %w", splited[0], splited[1], err)
+				return nil, fmt.Errorf("failed to parse the value of directive(%s=%s): %w", splited[0], splited[1], err)
 			}
 			switch k {
 			case dMaxAge:
@@ -181,6 +181,8 @@ func Parse(header string, opts ...parseOption) (*Header, error) {
 // ParseReader parses a Cache-Control header from an io.Reader based on RFC9111.
 // By default, it ignores unknown directives.
 // To return an error when unknown directives are found, use [ErrorOnUnknown] option.
+// By default, it ignores directives that have invalid values, like `max-age=invalid`.
+// To return an error when invalid values are found, use [ErrorOnInvalidValues] option.
 func ParseReader(r io.Reader, opts ...parseOption) (*Header, error) {
 	header, err := io.ReadAll(r)
 	if err != nil {
