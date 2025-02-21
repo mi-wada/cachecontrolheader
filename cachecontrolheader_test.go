@@ -78,11 +78,19 @@ func TestParseStrict(t *testing.T) {
 			wantErr: true,
 		},
 		{
-			header:  "max-age=invalid, must-revalidate, private",
+			header:  "max-age=3600, must-revalidate, private, max-stale=invalid",
 			wantErr: true,
 		},
 		{
-			header:  "max-age=10s, must-revalidate, private",
+			header:  "max-age=3600, must-revalidate, private, max-stale=10s",
+			wantErr: true,
+		},
+		{
+			header:  "max-age=invalid",
+			wantErr: true,
+		},
+		{
+			header:  "max-age=10s",
 			wantErr: true,
 		},
 	} {
