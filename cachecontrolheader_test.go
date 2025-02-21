@@ -70,6 +70,10 @@ func TestParseStrict(t *testing.T) {
 			wantErr: true,
 		},
 		{
+			header:  "max-age=3600, must-revalidate, private, unknown=10",
+			wantErr: true,
+		},
+		{
 			header:  "unknown",
 			wantErr: true,
 		},
@@ -117,6 +121,14 @@ func TestParseStrict_IgnoreUnknownDirectives(t *testing.T) {
 	}{
 		{
 			header: "max-age=3600, must-revalidate, private, unknown",
+			wantHeader: &cachecontrolheader.Header{
+				MaxAge:         3600 * time.Second,
+				MustRevalidate: true,
+				Private:        true,
+			},
+		},
+		{
+			header: "max-age=3600, must-revalidate, private, unknown=10",
 			wantHeader: &cachecontrolheader.Header{
 				MaxAge:         3600 * time.Second,
 				MustRevalidate: true,
