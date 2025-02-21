@@ -9,6 +9,7 @@ import (
 )
 
 func TestParse(t *testing.T) {
+	t.Parallel()
 	for _, tt := range []struct {
 		header string
 		want   *cachecontrolheader.Header
@@ -38,7 +39,9 @@ func TestParse(t *testing.T) {
 			want:   &cachecontrolheader.Header{},
 		},
 	} {
+		tt := tt
 		t.Run(tt.header, func(t *testing.T) {
+			t.Parallel()
 			h := cachecontrolheader.Parse(tt.header)
 			if diff := cmp.Diff(tt.want, h); diff != "" {
 				t.Errorf("Header mismatch (-want +got):\n%s", diff)
@@ -48,62 +51,95 @@ func TestParse(t *testing.T) {
 }
 
 func TestParseStrict(t *testing.T) {
+	t.Parallel()
 	for _, tt := range []struct {
-		header string
+		header     string
+		wantHeader *cachecontrolheader.Header
+		wantErr    bool
 	}{
 		{
-			header: "max-age=3600, must-revalidate, private, unknown",
-		},
-		{
-			header: "unknown",
-		},
-		{
-			header: "unknown=10",
-		},
-		{
-			header: "max-age=invalid, must-revalidate, private",
-		},
-		{
-			header: "max-age=10s, must-revalidate, private",
-		},
-	} {
-		t.Run(tt.header, func(t *testing.T) {
-			h, err := cachecontrolheader.ParseStrict(tt.header)
-			if err == nil {
-				t.Errorf("want error, but got nil. Header struct: %v", h)
-			}
-		})
-	}
-}
-
-func TestParseStrict_IgnoreUnknownDirectives(t *testing.T) {
-	for _, tt := range []struct {
-		header string
-		want   *cachecontrolheader.Header
-	}{
-		{
-			header: "max-age=3600, must-revalidate, private, unknown",
-			want: &cachecontrolheader.Header{
+			header: "max-age=3600, must-revalidate, private",
+			wantHeader: &cachecontrolheader.Header{
 				MaxAge:         3600 * time.Second,
 				MustRevalidate: true,
 				Private:        true,
 			},
 		},
 		{
-			header: "unknown",
-			want:   &cachecontrolheader.Header{},
+			header:  "max-age=3600, must-revalidate, private, unknown",
+			wantErr: true,
 		},
 		{
-			header: "unknown=10",
-			want:   &cachecontrolheader.Header{},
+			header:  "unknown",
+			wantErr: true,
+		},
+		{
+			header:  "unknown=10",
+			wantErr: true,
+		},
+		{
+			header:  "max-age=invalid, must-revalidate, private",
+			wantErr: true,
+		},
+		{
+			header:  "max-age=10s, must-revalidate, private",
+			wantErr: true,
 		},
 	} {
+		tt := tt
 		t.Run(tt.header, func(t *testing.T) {
-			h, err := cachecontrolheader.ParseStrict(tt.header, cachecontrolheader.IgnoreUnknownDirectives())
-			if err != nil {
-				t.Errorf("want nil, but got error: %v", err)
+			t.Parallel()
+			h, err := cachecontrolheader.ParseStrict(tt.header)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("got error: %v, want: %v", err, tt.wantErr)
 			}
-			if diff := cmp.Diff(tt.want, h); diff != "" {
+			if diff := cmp.Diff(tt.wantHeader, h); diff != "" {
+				t.Errorf("Header mismatch (-want +got):\n%s", diff)
+			}
+		})
+	}
+}
+
+func TestParseStrict_IgnoreUnknownDirectives(t *testing.T) {
+	t.Parallel()
+	for _, tt := range []struct {
+		header     string
+		wantHeader *cachecontrolheader.Header
+		wantErr    bool
+	}{
+		{
+			header: "max-age=3600, must-revalidate, private, unknown",
+			wantHeader: &cachecontrolheader.Header{
+				MaxAge:         3600 * time.Second,
+				MustRevalidate: true,
+				Private:        true,
+			},
+		},
+		{
+			header:     "unknown",
+			wantHeader: &cachecontrolheader.Header{},
+		},
+		{
+			header:     "unknown=10",
+			wantHeader: &cachecontrolheader.Header{},
+		},
+		{
+			header:  "max-age=invalid",
+			wantErr: true,
+		},
+		{
+			header:  "max-age=10s",
+			wantErr: true,
+		},
+	} {
+		tt := tt
+		t.Run(tt.header, func(t *testing.T) {
+			t.Parallel()
+			h, err := cachecontrolheader.ParseStrict(tt.header, cachecontrolheader.IgnoreUnknownDirectives())
+			if (err != nil) != tt.wantErr {
+				t.Errorf("got error: %v, want: %v", err, tt.wantErr)
+			}
+			if diff := cmp.Diff(tt.wantHeader, h); diff != "" {
 				t.Errorf("Header mismatch (-want +got):\n%s", diff)
 			}
 		})
@@ -111,31 +147,53 @@ func TestParseStrict_IgnoreUnknownDirectives(t *testing.T) {
 }
 
 func TestParseStrict_IgnoreInvalidValues(t *testing.T) {
+	t.Parallel()
 	for _, tt := range []struct {
-		header string
-		want   *cachecontrolheader.Header
+		header     string
+		wantHeader *cachecontrolheader.Header
+		wantErr    bool
 	}{
 		{
-			header: "max-age=invalid, must-revalidate, private",
-			want: &cachecontrolheader.Header{
+			header: "max-age=3600, must-revalidate, private, max-stale=invalid",
+			wantHeader: &cachecontrolheader.Header{
+				MaxAge:         3600 * time.Second,
 				MustRevalidate: true,
 				Private:        true,
 			},
 		},
 		{
-			header: "max-age=10s, must-revalidate, private",
-			want: &cachecontrolheader.Header{
+			header: "max-age=3600, must-revalidate, private, max-stale=10s",
+			wantHeader: &cachecontrolheader.Header{
+				MaxAge:         3600 * time.Second,
 				MustRevalidate: true,
 				Private:        true,
 			},
 		},
+		{
+			header:     "max-age=invalid",
+			wantHeader: &cachecontrolheader.Header{},
+		},
+		{
+			header:     "max-age=10s",
+			wantHeader: &cachecontrolheader.Header{},
+		},
+		{
+			header:  "unknown",
+			wantErr: true,
+		},
+		{
+			header:  "unknown=10",
+			wantErr: true,
+		},
 	} {
+		tt := tt
 		t.Run(tt.header, func(t *testing.T) {
+			t.Parallel()
 			h, err := cachecontrolheader.ParseStrict(tt.header, cachecontrolheader.IgnoreInvalidValues())
-			if err != nil {
-				t.Errorf("want nil, but got error: %v", err)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("got error: %v, want: %v", err, tt.wantErr)
 			}
-			if diff := cmp.Diff(tt.want, h); diff != "" {
+			if diff := cmp.Diff(tt.wantHeader, h); diff != "" {
 				t.Errorf("Header mismatch (-want +got):\n%s", diff)
 			}
 		})
@@ -143,6 +201,7 @@ func TestParseStrict_IgnoreInvalidValues(t *testing.T) {
 }
 
 func TestHeader_String(t *testing.T) {
+	t.Parallel()
 	for _, tt := range []struct {
 		header *cachecontrolheader.Header
 		want   string
@@ -160,7 +219,9 @@ func TestHeader_String(t *testing.T) {
 			want:   "",
 		},
 	} {
+		tt := tt
 		t.Run(tt.want, func(t *testing.T) {
+			t.Parallel()
 			if got := tt.header.String(); got != tt.want {
 				t.Errorf("Header.String() = %q, want %q", got, tt.want)
 			}
