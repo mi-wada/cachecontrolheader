@@ -5,7 +5,6 @@ package cachecontrolheader
 
 import (
 	"fmt"
-	"io"
 	"strings"
 	"time"
 )
@@ -26,6 +25,43 @@ const (
 	dPublic          = "public"
 	dSMaxAge         = "s-maxage"
 )
+
+// Parse parses a Cache-Control header based on RFC9111.
+// By default, it ignores unknown directives and invalid values.
+// To return an error when those cases, use [ParseStrict] instead.
+func Parse(header string) *Header {
+	h, _ := parse(header, IgnoreInvalidValues(), IgnoreUnknownDirectives())
+	return h
+}
+
+// ParseStrict strictly parses a Cache-Control header based on RFC9111.
+// By default, it returns an error when unknown directives or invalid values are found.
+// To ignore either of them, use [IgnoreUnknownDirectives] or [IgnoreInvalidValues] options.
+// To ignore both, use [Parse] instead.
+func ParseStrict(header string, opts ...parseOption) (*Header, error) {
+	return parse(header, opts...)
+}
+
+// IgnoreUnknownDirectives allows to ignore unknown directives.
+func IgnoreUnknownDirectives() parseOption {
+	return func(o *option) {
+		o.ignoreUnknownDirectives = true
+	}
+}
+
+// IgnoreInvalidValues allows to ignore directives that have invalid values.
+// Invalid values examples: `max-age=invalid`, `max-stale=1s`
+func IgnoreInvalidValues() parseOption {
+	return func(o *option) {
+		o.ignoreInvalidValues = true
+	}
+}
+
+type option struct {
+	ignoreUnknownDirectives bool
+	ignoreInvalidValues     bool
+}
+type parseOption func(*option)
 
 // Header represents a Cache-Control header.
 type Header struct {
@@ -89,33 +125,12 @@ func (h *Header) String() string {
 	return strings.Join(ds, ", ")
 }
 
-type option struct {
-	errorOnUnknownDirectives bool
-	errorOnInvalidValues     bool
-}
-type parseOption func(*option)
-
-// ErrorOnUnknown allows to return an error when unknown directives are found.
-func ErrorOnUnknown() parseOption {
-	return func(o *option) {
-		o.errorOnUnknownDirectives = true
-	}
-}
-
-// ErrorOnInvalidValues allows to return an error when invalid values are found.
-// Invalid values examples: `max-age=invalid`, `max-stale=1s`
-func ErrorOnInvalidValues() parseOption {
-	return func(o *option) {
-		o.errorOnInvalidValues = true
-	}
-}
-
-// Parse parses a Cache-Control header based on RFC9111.
-// By default, it ignores unknown directives.
-// To return an error when unknown directives are found, use [ErrorOnUnknown] option.
-// By default, it ignores directives that have invalid values, like `max-age=invalid`.
-// To return an error when invalid values are found, use [ErrorOnInvalidValues] option.
-func Parse(header string, opts ...parseOption) (*Header, error) {
+// parse parses a Cache-Control header based on RFC9111.
+// By default, it returns an error when unknown directives found.
+// To ignore unknown directives, use [IgnoreUnknownDirectives] option.
+// By default, it returns an error when invalid values found.
+// To ignore invalid values, use [IgnoreInvalidValues] option.
+func parse(header string, opts ...parseOption) (*Header, error) {
 	option := option{}
 	for _, opt := range opts {
 		opt(&option)
@@ -149,14 +164,15 @@ func Parse(header string, opts ...parseOption) (*Header, error) {
 			case dPublic:
 				h.Public = true
 			default:
-				if option.errorOnUnknownDirectives {
-					return nil, fmt.Errorf("unknown directive: %s", splited[0])
+				if option.ignoreUnknownDirectives {
+					continue
 				}
+				return nil, fmt.Errorf("unknown directive: %s", splited[0])
 			}
 		case 2:
 			k := splited[0]
 			v, err := time.ParseDuration(strings.TrimSpace(splited[1]) + "s")
-			if err != nil && option.errorOnInvalidValues {
+			if err != nil && !option.ignoreInvalidValues {
 				return nil, fmt.Errorf("failed to parse the value of directive(%s=%s): %w", splited[0], splited[1], err)
 			}
 			switch k {
@@ -169,24 +185,12 @@ func Parse(header string, opts ...parseOption) (*Header, error) {
 			case dSMaxAge:
 				h.SMaxAge = v
 			default:
-				if option.errorOnUnknownDirectives {
-					return nil, fmt.Errorf("unknown directive: %s", k)
+				if option.ignoreUnknownDirectives {
+					continue
 				}
+				return nil, fmt.Errorf("unknown directive: %s", k)
 			}
 		}
 	}
 	return &h, nil
-}
-
-// ParseReader parses a Cache-Control header from an io.Reader based on RFC9111.
-// By default, it ignores unknown directives.
-// To return an error when unknown directives are found, use [ErrorOnUnknown] option.
-// By default, it ignores directives that have invalid values, like `max-age=invalid`.
-// To return an error when invalid values are found, use [ErrorOnInvalidValues] option.
-func ParseReader(r io.Reader, opts ...parseOption) (*Header, error) {
-	header, err := io.ReadAll(r)
-	if err != nil {
-		return nil, err
-	}
-	return Parse(string(header), opts...)
 }

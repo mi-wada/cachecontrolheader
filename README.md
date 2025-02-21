@@ -21,10 +21,7 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	cacheControl, err := cachecontrolheader.Parse(res.Header.Get("Cache-Control"))
-	if err != nil {
-		panic(err)
-	}
+	cacheControl := cachecontrolheader.Parse(res.Header.Get("Cache-Control"))
 	fmt.Println(cacheControl.MaxAge)
 	fmt.Println(cacheControl.MustRevalidate)
 	fmt.Println(cacheControl.Private)

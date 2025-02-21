@@ -33,12 +33,13 @@ func TestParse(t *testing.T) {
 			header: "unknown=10",
 			want:   &cachecontrolheader.Header{},
 		},
+		{
+			header: "max-age=invalid",
+			want:   &cachecontrolheader.Header{},
+		},
 	} {
 		t.Run(tt.header, func(t *testing.T) {
-			h, err := cachecontrolheader.Parse(tt.header)
-			if err != nil {
-				t.Fatal(err)
-			}
+			h := cachecontrolheader.Parse(tt.header)
 			if diff := cmp.Diff(tt.want, h); diff != "" {
 				t.Errorf("Header mismatch (-want +got):\n%s", diff)
 			}
@@ -46,7 +47,7 @@ func TestParse(t *testing.T) {
 	}
 }
 
-func TestParseErrorOnUnknown(t *testing.T) {
+func TestParseStrict(t *testing.T) {
 	for _, tt := range []struct {
 		header string
 	}{
@@ -59,9 +60,15 @@ func TestParseErrorOnUnknown(t *testing.T) {
 		{
 			header: "unknown=10",
 		},
+		{
+			header: "max-age=invalid, must-revalidate, private",
+		},
+		{
+			header: "max-age=10s, must-revalidate, private",
+		},
 	} {
 		t.Run(tt.header, func(t *testing.T) {
-			h, err := cachecontrolheader.Parse(tt.header, cachecontrolheader.ErrorOnUnknown())
+			h, err := cachecontrolheader.ParseStrict(tt.header)
 			if err == nil {
 				t.Errorf("want error, but got nil. Header struct: %v", h)
 			}
@@ -69,21 +76,67 @@ func TestParseErrorOnUnknown(t *testing.T) {
 	}
 }
 
-func TestParseErrorOnInvalidValues(t *testing.T) {
+func TestParseStrict_IgnoreUnknownDirectives(t *testing.T) {
 	for _, tt := range []struct {
 		header string
+		want   *cachecontrolheader.Header
 	}{
 		{
-			header: "max-age=string",
+			header: "max-age=3600, must-revalidate, private, unknown",
+			want: &cachecontrolheader.Header{
+				MaxAge:         3600 * time.Second,
+				MustRevalidate: true,
+				Private:        true,
+			},
 		},
 		{
-			header: "max-age=1s",
+			header: "unknown",
+			want:   &cachecontrolheader.Header{},
+		},
+		{
+			header: "unknown=10",
+			want:   &cachecontrolheader.Header{},
 		},
 	} {
 		t.Run(tt.header, func(t *testing.T) {
-			h, err := cachecontrolheader.Parse(tt.header, cachecontrolheader.ErrorOnInvalidValues())
-			if err == nil {
-				t.Errorf("want error, but got nil. Header struct: %v", h)
+			h, err := cachecontrolheader.ParseStrict(tt.header, cachecontrolheader.IgnoreUnknownDirectives())
+			if err != nil {
+				t.Errorf("want nil, but got error: %v", err)
+			}
+			if diff := cmp.Diff(tt.want, h); diff != "" {
+				t.Errorf("Header mismatch (-want +got):\n%s", diff)
+			}
+		})
+	}
+}
+
+func TestParseStrict_IgnoreInvalidValues(t *testing.T) {
+	for _, tt := range []struct {
+		header string
+		want   *cachecontrolheader.Header
+	}{
+		{
+			header: "max-age=invalid, must-revalidate, private",
+			want: &cachecontrolheader.Header{
+				MustRevalidate: true,
+				Private:        true,
+			},
+		},
+		{
+			header: "max-age=10s, must-revalidate, private",
+			want: &cachecontrolheader.Header{
+				MustRevalidate: true,
+				Private:        true,
+			},
+		},
+	} {
+		t.Run(tt.header, func(t *testing.T) {
+			h, err := cachecontrolheader.ParseStrict(tt.header, cachecontrolheader.IgnoreInvalidValues())
+			if err != nil {
+				t.Errorf("want nil, but got error: %v", err)
+			}
+			if diff := cmp.Diff(tt.want, h); diff != "" {
+				t.Errorf("Header mismatch (-want +got):\n%s", diff)
 			}
 		})
 	}
