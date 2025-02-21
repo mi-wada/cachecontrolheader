@@ -91,6 +91,7 @@ func (h *Header) String() string {
 
 type option struct {
 	errorOnUnknownDirectives bool
+	errorOnInvalidValues     bool
 }
 type parseOption func(*option)
 
@@ -101,9 +102,19 @@ func ErrorOnUnknown() parseOption {
 	}
 }
 
+// ErrorOnInvalidValues allows to return an error when invalid values are found.
+// Invalid values examples: `max-age=invalid`, `max-stale=1s`
+func ErrorOnInvalidValues() parseOption {
+	return func(o *option) {
+		o.errorOnInvalidValues = true
+	}
+}
+
 // Parse parses a Cache-Control header based on RFC9111.
 // By default, it ignores unknown directives.
 // To return an error when unknown directives are found, use [ErrorOnUnknown] option.
+// By default, it ignores directives that have invalid values, like `max-age=invalid`.
+// To return an error when invalid values are found, use [ErrorOnInvalidValues] option.
 func Parse(header string, opts ...parseOption) (*Header, error) {
 	option := option{}
 	for _, opt := range opts {
@@ -145,7 +156,7 @@ func Parse(header string, opts ...parseOption) (*Header, error) {
 		case 2:
 			k := splited[0]
 			v, err := time.ParseDuration(strings.TrimSpace(splited[1]) + "s")
-			if err != nil {
+			if err != nil && option.errorOnInvalidValues {
 				return nil, fmt.Errorf("failed to parse duration for directive %s=%s: %w", splited[0], splited[1], err)
 			}
 			switch k {

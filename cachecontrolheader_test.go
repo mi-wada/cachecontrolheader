@@ -46,50 +46,44 @@ func TestParse(t *testing.T) {
 	}
 }
 
-func TestParseErr(t *testing.T) {
-	for _, tt := range []struct {
-		header string
-		want   *cachecontrolheader.Header
-	}{
-		{
-			header: "max-age=string",
-		},
-	} {
-		t.Run(tt.header, func(t *testing.T) {
-			h, err := cachecontrolheader.Parse(tt.header)
-			if err == nil {
-				t.Errorf("want error, but got nil. h: %v", h)
-			}
-		})
-	}
-}
-
 func TestParseErrorOnUnknown(t *testing.T) {
 	for _, tt := range []struct {
 		header string
-		want   *cachecontrolheader.Header
 	}{
 		{
 			header: "max-age=3600, must-revalidate, private, unknown",
-			want: &cachecontrolheader.Header{
-				MaxAge:         3600 * time.Second,
-				MustRevalidate: true,
-				Private:        true,
-			},
 		},
 		{
 			header: "unknown",
-			want:   &cachecontrolheader.Header{},
 		},
 		{
 			header: "unknown=10",
-			want:   &cachecontrolheader.Header{},
 		},
 	} {
 		t.Run(tt.header, func(t *testing.T) {
 			h, err := cachecontrolheader.Parse(tt.header, cachecontrolheader.ErrorOnUnknown())
 			if err == nil {
-				t.Errorf("want error, but got nil. h: %v", h)
+				t.Errorf("want error, but got nil. Header struct: %v", h)
+			}
+		})
+	}
+}
+
+func TestParseErrorOnInvalidValues(t *testing.T) {
+	for _, tt := range []struct {
+		header string
+	}{
+		{
+			header: "max-age=string",
+		},
+		{
+			header: "max-age=1s",
+		},
+	} {
+		t.Run(tt.header, func(t *testing.T) {
+			h, err := cachecontrolheader.Parse(tt.header, cachecontrolheader.ErrorOnInvalidValues())
+			if err == nil {
+				t.Errorf("want error, but got nil. Header struct: %v", h)
 			}
 		})
 	}

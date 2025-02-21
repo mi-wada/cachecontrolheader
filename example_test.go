@@ -22,3 +22,10 @@ func Example_errorOnUnknown() {
 	fmt.Println(err)
 	// Output: unknown directive: ???
 }
+
+func Example_errorOnInvalidValues() {
+	s := "max-age=invalid, must-revalidate, private"
+	_, err := cachecontrolheader.Parse(s, cachecontrolheader.ErrorOnInvalidValues())
+	fmt.Println(err)
+	// Output: failed to parse duration for directive max-age=invalid: time: invalid duration "invalids"
+}
