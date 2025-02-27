@@ -21,7 +21,6 @@ func Example_parseStrict() {
 	s = "max-age=invalid, must-revalidate, private"
 	_, err = cachecontrolheader.ParseStrict(s)
 	fmt.Println(err)
-
 	// Output:
 	// unknown directive: ???
 	// failed to parse the value of directive(max-age=invalid): time: invalid duration "invalids"
