@@ -9,8 +9,8 @@ import (
 func Example() {
 	s := "max-age=3600, must-revalidate, private"
 	h := cachecontrolheader.Parse(s)
-	fmt.Println(h.MaxAge, h.MustRevalidate, h.Private)
-	// Output: 1h0m0s true true
+	fmt.Println(h.MaxAge, h.MustRevalidate, h.Private, h.MaxStale)
+	// Output: 1h0m0s true true <nil>
 }
 
 func Example_parseStrict() {

@@ -65,31 +65,31 @@ type parseOption func(*option)
 
 // Header represents a Cache-Control header.
 type Header struct {
-	MaxAge          time.Duration // max-age directive
-	MaxStale        time.Duration // max-stale directive
-	MinFresh        time.Duration // min-fresh directive
-	NoCache         bool          // no-cache directive
-	NoStore         bool          // no-store directive
-	NoTransform     bool          // no-transform directive
-	OnlyIfCached    bool          // only-if-cached directive
-	MustRevalidate  bool          // must-revalidate directive
-	MustUnderstand  bool          // must-understand directive
-	Private         bool          // private directive
-	ProxyRevalidate bool          // proxy-revalidate directive
-	Public          bool          // public directive
-	SMaxAge         time.Duration // s-maxage directive
+	MaxAge          *time.Duration // max-age directive
+	MaxStale        *time.Duration // max-stale directive
+	MinFresh        *time.Duration // min-fresh directive
+	NoCache         bool           // no-cache directive
+	NoStore         bool           // no-store directive
+	NoTransform     bool           // no-transform directive
+	OnlyIfCached    bool           // only-if-cached directive
+	MustRevalidate  bool           // must-revalidate directive
+	MustUnderstand  bool           // must-understand directive
+	Private         bool           // private directive
+	ProxyRevalidate bool           // proxy-revalidate directive
+	Public          bool           // public directive
+	SMaxAge         *time.Duration // s-maxage directive
 }
 
 // String returns a string representation of the Cache-Control header.
 func (h *Header) String() string {
 	var ds []string
-	if h.MaxAge > 0 {
+	if h.MaxAge != nil {
 		ds = append(ds, fmt.Sprintf("%s=%d", dMaxAge, int(h.MaxAge.Seconds())))
 	}
-	if h.MaxStale > 0 {
+	if h.MaxStale != nil {
 		ds = append(ds, fmt.Sprintf("%s=%d", dMaxStale, int(h.MaxStale.Seconds())))
 	}
-	if h.MinFresh > 0 {
+	if h.MinFresh != nil {
 		ds = append(ds, fmt.Sprintf("%s=%d", dMinFresh, int(h.MinFresh.Seconds())))
 	}
 	if h.NoCache {
@@ -119,7 +119,7 @@ func (h *Header) String() string {
 	if h.Public {
 		ds = append(ds, dPublic)
 	}
-	if h.SMaxAge > 0 {
+	if h.SMaxAge != nil {
 		ds = append(ds, fmt.Sprintf("%s=%d", dSMaxAge, int(h.SMaxAge.Seconds())))
 	}
 	return strings.Join(ds, ", ")
@@ -172,18 +172,22 @@ func parse(header string, opts ...parseOption) (*Header, error) {
 		case 2:
 			k := splited[0]
 			v, err := time.ParseDuration(strings.TrimSpace(splited[1]) + "s")
-			if err != nil && !option.ignoreInvalidValues {
-				return nil, fmt.Errorf("failed to parse the value of directive(%s=%s): %w", splited[0], splited[1], err)
+			if err != nil {
+				if option.ignoreInvalidValues {
+					continue
+				} else {
+					return nil, fmt.Errorf("failed to parse the value of directive(%s=%s): %w", splited[0], splited[1], err)
+				}
 			}
 			switch k {
 			case dMaxAge:
-				h.MaxAge = v
+				h.MaxAge = &v
 			case dMaxStale:
-				h.MaxStale = v
+				h.MaxStale = &v
 			case dMinFresh:
-				h.MinFresh = v
+				h.MinFresh = &v
 			case dSMaxAge:
-				h.SMaxAge = v
+				h.SMaxAge = &v
 			default:
 				if option.ignoreUnknownDirectives {
 					continue

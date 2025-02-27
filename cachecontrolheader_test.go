@@ -8,6 +8,10 @@ import (
 	"github.com/mi-wada/cachecontrolheader"
 )
 
+func durationPtr(d time.Duration) *time.Duration {
+	return &d
+}
+
 func TestParse(t *testing.T) {
 	t.Parallel()
 	for _, tt := range []struct {
@@ -17,7 +21,7 @@ func TestParse(t *testing.T) {
 		{
 			header: "max-age=3600, must-revalidate, private",
 			want: &cachecontrolheader.Header{
-				MaxAge:         3600 * time.Second,
+				MaxAge:         durationPtr(3600 * time.Second),
 				MustRevalidate: true,
 				Private:        true,
 			},
@@ -60,7 +64,7 @@ func TestParseStrict(t *testing.T) {
 		{
 			header: "max-age=3600, must-revalidate, private",
 			wantHeader: &cachecontrolheader.Header{
-				MaxAge:         3600 * time.Second,
+				MaxAge:         durationPtr(3600 * time.Second),
 				MustRevalidate: true,
 				Private:        true,
 			},
@@ -122,7 +126,7 @@ func TestParseStrict_IgnoreUnknownDirectives(t *testing.T) {
 		{
 			header: "max-age=3600, must-revalidate, private, unknown",
 			wantHeader: &cachecontrolheader.Header{
-				MaxAge:         3600 * time.Second,
+				MaxAge:         durationPtr(3600 * time.Second),
 				MustRevalidate: true,
 				Private:        true,
 			},
@@ -130,7 +134,7 @@ func TestParseStrict_IgnoreUnknownDirectives(t *testing.T) {
 		{
 			header: "max-age=3600, must-revalidate, private, unknown=10",
 			wantHeader: &cachecontrolheader.Header{
-				MaxAge:         3600 * time.Second,
+				MaxAge:         durationPtr(3600 * time.Second),
 				MustRevalidate: true,
 				Private:        true,
 			},
@@ -176,7 +180,7 @@ func TestParseStrict_IgnoreInvalidValues(t *testing.T) {
 		{
 			header: "max-age=3600, must-revalidate, private, max-stale=invalid",
 			wantHeader: &cachecontrolheader.Header{
-				MaxAge:         3600 * time.Second,
+				MaxAge:         durationPtr(3600 * time.Second),
 				MustRevalidate: true,
 				Private:        true,
 			},
@@ -184,7 +188,7 @@ func TestParseStrict_IgnoreInvalidValues(t *testing.T) {
 		{
 			header: "max-age=3600, must-revalidate, private, max-stale=10s",
 			wantHeader: &cachecontrolheader.Header{
-				MaxAge:         3600 * time.Second,
+				MaxAge:         durationPtr(3600 * time.Second),
 				MustRevalidate: true,
 				Private:        true,
 			},
@@ -228,7 +232,7 @@ func TestHeader_String(t *testing.T) {
 	}{
 		{
 			header: &cachecontrolheader.Header{
-				MaxAge:         3600 * time.Second,
+				MaxAge:         durationPtr(3600 * time.Second),
 				MustRevalidate: true,
 				Private:        true,
 			},
