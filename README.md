@@ -2,7 +2,7 @@
 
 [![Godoc Reference](https://godoc.org/github.com/mi-wada/cachecontrolheader?status.svg)](http://godoc.org/github.com/mi-wada/cachecontrolheader)
 
-A Go package to parse HTTP Cache-Control headers based on [RFC9111](https://datatracker.ietf.org/doc/html/rfc9111.html).
+A Go package to parse HTTP Cache-Control headers based on [RFC9111 Section 5.2](https://www.rfc-editor.org/rfc/rfc9111.html#section-5.2).
 
 ## Usage
 

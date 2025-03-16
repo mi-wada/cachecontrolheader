@@ -1,6 +1,5 @@
 // Package cachecontrolheader provides functionality to parse and handle
-// Cache-Control headers based on RFC9111.
-// https://datatracker.ietf.org/doc/html/rfc9111.html#name-cache-control
+// Cache-Control headers based on RFC 9111 Section 5.2.
 package cachecontrolheader
 
 import (
@@ -26,7 +25,7 @@ const (
 	dSMaxAge         = "s-maxage"
 )
 
-// Parse parses a Cache-Control header based on RFC9111.
+// Parse parses a Cache-Control header based on RFC 9111 Section 5.2.
 // By default, it ignores unknown directives and invalid values.
 // To return an error when those cases, use [ParseStrict] instead.
 func Parse(header string) *Header {
@@ -34,7 +33,7 @@ func Parse(header string) *Header {
 	return h
 }
 
-// ParseStrict strictly parses a Cache-Control header based on RFC9111.
+// ParseStrict strictly parses a Cache-Control header based on RFC 9111 Section 5.2.
 // By default, it returns an error when unknown directives or invalid values are found.
 // To ignore either of them, use [IgnoreUnknownDirectives] or [IgnoreInvalidValues] options.
 // To ignore both, use [Parse] instead.
@@ -125,7 +124,7 @@ func (h *Header) String() string {
 	return strings.Join(ds, ", ")
 }
 
-// parse parses a Cache-Control header based on RFC9111.
+// parse parses a Cache-Control header based on RFC 9111 Section 5.2.
 // By default, it returns an error when unknown directives found.
 // To ignore unknown directives, use [IgnoreUnknownDirectives] option.
 // By default, it returns an error when invalid values found.
